@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
+const https = require('https');
 
 const app = express();
 
@@ -13,11 +14,50 @@ app.get('/', function(req, res) {
 });
 
 app.post('/', function(req, res) {
-  console.log(req.body.fname);
-  console.log(req.body.lname);
-  console.log(req.body.email);
+  const firstName = req.body.fname;
+  const lastName = req.body.lname;
+  const email = req.body.email;
+
+  const data = {
+    members: [
+      {
+        email_address: email,
+        status: "subscribed",
+        merge_fields: {
+          FNAME: firstName,
+          LNAME: lastName
+        }
+      }
+    ]
+  };
+
+  const jsonData = JSON.stringify(data);
+
+  const apiKey = "9a2399ec69821efdeb31ed1240070680-us17";
+  const listID = "70576fe352";
+  const url = `https://us17.api.mailchimp.com/3.0/lists/${listID}`;
+  const options = {
+    method: "POST",
+    auth: "shubham30:9a2399ec69821efdeb31ed1240070680-us17"
+  }
+
+  const request = https.request(url, options, function(response) {
+
+    response.on("data", function(data) {
+      console.log(JSON.parse(data));
+    })
+  })
+
+  request.write(jsonData);
+  request.end();
 })
 
 app.listen(3000, function () {
   console.log('Server is running on PORT: 3000');
 })
+
+// API Key
+// 9a2399ec69821efdeb31ed1240070680-us17
+
+// List ID
+// 70576fe352
